@@ -257,7 +257,7 @@ A regex set in `app.js` flags phrases like `ignore previous`, `system prompt`, `
 
 - Forces `case_type` to `other`
 - Forces `department` to `customer_support`
-- Forces `department` to `fraud_detect`
+- Forces `department` to `fraud_detection`
 - Forces `human_review_required` to `true`
 - Logs a warning with the `ticket_id`
 
