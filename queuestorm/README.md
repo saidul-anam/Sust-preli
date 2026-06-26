@@ -34,6 +34,23 @@ With the server running in the background, execute any of the following test sui
 
 ---
 
+## Live Deployment
+
+The service is deployed live on Render at:
+**Base URL**: `https://backendrooms-sw74.onrender.com`
+
+### Deployed Endpoints
+* **Liveness Probe**: `GET https://backendrooms-sw74.onrender.com/health`
+* **Ticket Analysis**: `POST https://backendrooms-sw74.onrender.com/analyze-ticket`
+
+### Testing the APi
+* **You can test the api's from Postman**
+
+> [!WARNING]
+> This service is hosted on the Render Free Tier. Free instances spin down automatically after 15 minutes of inactivity. When a new request arrives, it may take up to a minute or more for the instance to spin up (cold start). If you experience a delay or no immediate response, please wait a moment and try the request again.
+
+---
+
 ## Table of Contents
 
 - [Overview](#overview)
