@@ -14,13 +14,13 @@ app.get("/health", (req, res) => {
 });
 
 app.post("/analyze-ticket", (req, res) => {
+    if (typeof req.body?.complaint === "string" && req.body.complaint.trim() === "") {
+        return res.status(422).json({ error: "complaint cannot be empty" });
+    }
     let parsed;
     try {
         parsed = TicketRequestSchema.parse(req.body);
     } catch (e) {
-        if (typeof req.body?.complaint === "string" && req.body.complaint.trim() === "") {
-            return res.status(422).json({ error: "complaint cannot be empty" });
-        }
         return res.status(400).json({ error: "invalid request schema" });
     }
 
@@ -43,26 +43,56 @@ app.use((err, req, res, next) => {
 });
 
 function analyzeTicket(input) {
-    const { ticket_id, complaint, language, user_type, transaction_history } = input;
+    const { ticket_id, complaint, language, user_type, transaction_history, campaign_context, metadata } = input;
 
     const INJECTION_PATTERNS = [
-        /ignore previous/i, /system prompt/i, /you are now/i,
-        /disregard/i, /forget instructions/i, /act as/i
+        /\bignore\s+(?:all\s+)?previous\b/i,
+        /\bsystem\s+prompt\b/i,
+        /\byou\s+are\s+now\b/i,
+        /\bdisregard\b/i,
+        /\bforget\s+instructions\b/i,
+        /\bact\s+as\b/i,
+        /\bbypass\b/i,
+        /\bsystem\s+override\b/i,
+        /\boverride\b/i
     ];
-    const isInjection = INJECTION_PATTERNS.some(p => p.test(complaint));
-    if (isInjection) {
-        console.warn("possible prompt injection detected in ticket:", ticket_id);
+    const isStringInjection = (str) => typeof str === "string" && INJECTION_PATTERNS.some(p => p.test(str));
+
+    const isComplaintInjection = isStringInjection(complaint);
+    let isContextInjection = isStringInjection(campaign_context);
+    if (metadata) {
+        for (const key of Object.keys(metadata)) {
+            if (isStringInjection(metadata[key]) || isStringInjection(key)) {
+                isContextInjection = true;
+            }
+        }
     }
 
-    const caseType = isInjection ? "other" : classifyCaseType(complaint);
-    const { match, verdict: rawVerdict, ambiguous } = matchTransaction(complaint, transaction_history);
-    const verdict = match ? checkInconsistency(caseType, match, transaction_history) : rawVerdict;
+    if (isComplaintInjection || isContextInjection) {
+        console.warn("possible injection detected in ticket:", ticket_id);
+    }
+
+    const caseType = isComplaintInjection ? "other" : classifyCaseType(complaint);
+    const { match, verdict: rawVerdict, ambiguous } = matchTransaction(complaint, transaction_history, caseType);
+    const verdict = match ? checkInconsistency(caseType, match, transaction_history, complaint, user_type) : rawVerdict;
 
     const amount = match ? match.amount : parseAmountFromText(complaint);
-    const severity = getSeverity(caseType, verdict, amount);
-    const department = isInjection ? "customer_support" : getDepartment(caseType, user_type);
-    const humanReview = isInjection ? true : needsHumanReview(caseType, verdict, severity);
+    const severity = getSeverity(caseType, verdict, amount, match, { isComplaintInjection, isContextInjection, campaign_context, complaint, user_type, history: transaction_history });
+    const department = isComplaintInjection ? "fraud_risk" : getDepartment(caseType, user_type, match, complaint, verdict);
+    const humanReview = (isComplaintInjection || isContextInjection) ? true : needsHumanReview(caseType, verdict, severity, match, complaint, user_type, transaction_history);
     const txnId = match ? match.transaction_id : null;
+
+
+    let detectedLang = language;
+    if (complaint) {
+        const hasBangla = /[\u0980-\u09FF]/.test(complaint);
+        if (hasBangla) {
+            detectedLang = "bn";
+        } else if (language === "bn") {
+
+            detectedLang = "en";
+        }
+    }
 
     return {
         ticket_id,
@@ -73,7 +103,7 @@ function analyzeTicket(input) {
         department,
         agent_summary: buildAgentSummary(caseType, txnId, complaint, ambiguous),
         recommended_next_action: buildNextAction(caseType, txnId, verdict),
-        customer_reply: generateCustomerReply(caseType, txnId, language),
+        customer_reply: generateCustomerReply(caseType, txnId, detectedLang),
         human_review_required: humanReview,
         confidence: match ? 0.9 : (ambiguous ? 0.6 : 0.5),
         reason_codes: [caseType, match ? "transaction_match" : "no_match"]

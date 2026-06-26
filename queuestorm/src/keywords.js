@@ -4,11 +4,15 @@ export const CASE_TYPE_KEYWORDS = {
         "called me", "account will be blocked", "scam", "fraud", "suspicious call", "fake call",
         "claiming to be", "verify your account", "share your", "give me your",
         "ওটিপি", "পিন", "পাসওয়ার্ড", "কল করে", "স্কাম", "জাল কল", "প্রতারণা", "ব্লক করবে",
-        "otp dite boleche", "pin nite cheyeche", "block korbe boleche", "pass change", "acc block"
+        "otp dite boleche", "pin nite cheyeche", "block korbe boleche", "pass change", "acc block",
+        "audit team", "unauthorized cash out", "someone cash out", "used my account", "fake promotion",
+        "won money", "bkash-offer", "shared my password", "shared my pin", "shared my otp", "impersonate",
+        "from bangladesh bank", "another call", "click a link", "get 500 taka", "losing money", "fake bkash", "facebook group"
     ],
     duplicate_payment: [
         "twice", "duplicate", "charged twice", "double charge", "deducted twice", "paid only once",
         "2 times", "two times", "repeated charge", "same amount again",
+        "three times", "3 times", "triple", "multiple times",
         "দুইবার", "ডুপ্লিকেট", "ডাবল", "২ বার", "দুই বার",
         "duibar keteche", "twice deduct", "double cut", "2 bar keteche", "double keteche", "same tk 2 bar"
     ],
@@ -26,18 +30,19 @@ export const CASE_TYPE_KEYWORDS = {
     payment_failed: [
         "failed", "balance deducted", "balance was deducted", "showed failed", "transaction failed",
         "money deducted", "tk kete nise", "money cut", "fail dekhay", "unsuccessful", "pending long time",
-        "ব্যর্থ", "কাটা হয়েছে", "ফেইল", "ব্যর্থ লেনদেন", "টাকা কেটেছে",
+        "ব্যর্থ", "কাটা হয়েছে", "ফেইল", "ব্যর্থ লেনদেন", "টাকা কেটেছে", "পেমেন্ট হয়নি", "কেটে নিয়েছে", "টাকা কেটে",
         "fail hoyeche", "deduct hoyeche", "kete gese", "balance kete", "show korche failed", "tk kete", "failed payment"
     ],
     wrong_transfer: [
         "wrong number", "wrong person", "sent to wrong", "typed it wrong", "mistake", "wrong recipient",
-        "accidental transfer", "sent mistakenly", "bhul number",
+        "accidental transfer", "sent mistakenly", "bhul number", "wrong transfer", "vul account",
         "didn't get it", "he didn't receive", "not received", "hasn't received", "did not get",
-        "ভুল নাম্বার", "ভুল মানুষ", "ভুলে", "ভুল নাম্বারে", "ভুল একাউন্ট",
+        "ভুল নাম্বার", "ভুল মানুষ", "ভুলে", "ভুল নাম্বারে", "ভুল একাউন্ট", "ভুল নম্বরে", "নম্বরে", "নম্বর",
         "vul number", "vul transfer", "wrong e pathiye", "ভুল e", "wrong number e", "pathayfelse", "pathaisi", "niye gese"
     ],
     refund_request: [
         "refund", "money back", "return my money", "changed my mind", "don't want it anymore", "cancel order",
+        "cashback", "campaign", "bonus", "reversed", "reversed in my account", "never arrived", "not arrived", "no recharge", "defective",
         "রিফান্ড", "টাকা ফেরত", "ফেরত দিন", "টাকা ব্যাক",
         "ferat chai", "takar ferat", "ফেরত চাই", "money ferat", "tk ferot", "refund lagbe"
     ]
