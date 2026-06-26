@@ -18,10 +18,17 @@ app.post("/analyze-ticket", (req, res) => {
     try {
         parsed = TicketRequestSchema.parse(req.body);
     } catch (e) {
+        // Zod rejects missing/wrong-type fields → 400
+        // Empty-string complaint also rejected by min(1) → treat as 422 here
         if (typeof req.body?.complaint === "string" && req.body.complaint.trim() === "") {
             return res.status(422).json({ error: "complaint cannot be empty" });
         }
         return res.status(400).json({ error: "invalid request schema" });
+    }
+
+    // Whitespace-only complaint passes Zod min(1) but is semantically invalid → 422
+    if (parsed.complaint.trim() === "") {
+        return res.status(422).json({ error: "complaint cannot be empty" });
     }
 
     try {
