@@ -40,7 +40,7 @@ app.post("/analyze-ticket", (req, res) => {
     }
 });
 
-// malformed JSON body handler (must be after routes, 4-arg signature)
+
 app.use((err, req, res, next) => {
     if (err.type === "entity.parse.failed" || err instanceof SyntaxError) {
         return res.status(400).json({ error: "malformed JSON body" });
@@ -52,14 +52,23 @@ app.use((err, req, res, next) => {
 function analyzeTicket(input) {
     const { ticket_id, complaint, language, user_type, transaction_history } = input;
 
-    const caseType = classifyCaseType(complaint);
+    const INJECTION_PATTERNS = [
+        /ignore previous/i, /system prompt/i, /you are now/i,
+        /disregard/i, /forget instructions/i, /act as/i
+    ];
+    const isInjection = INJECTION_PATTERNS.some(p => p.test(complaint));
+    if (isInjection) {
+        console.warn("possible prompt injection detected in ticket:", ticket_id);
+    }
+
+    const caseType = isInjection ? "other" : classifyCaseType(complaint);
     const { match, verdict: rawVerdict, ambiguous } = matchTransaction(complaint, transaction_history);
     const verdict = match ? checkInconsistency(caseType, match, transaction_history) : rawVerdict;
 
     const amount = match ? match.amount : parseAmountFromText(complaint);
     const severity = getSeverity(caseType, verdict, amount);
-    const department = getDepartment(caseType, user_type);
-    const humanReview = needsHumanReview(caseType, verdict, severity);
+    const department = isInjection ? "customer_support" : getDepartment(caseType, user_type);
+    const humanReview = isInjection ? true : needsHumanReview(caseType, verdict, severity);
     const txnId = match ? match.transaction_id : null;
 
     return {

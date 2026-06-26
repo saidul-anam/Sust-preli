@@ -15,7 +15,9 @@ async function run() {
             out.relevant_transaction_id === exp.relevant_transaction_id &&
             out.evidence_verdict === exp.evidence_verdict &&
             out.case_type === exp.case_type &&
-            out.department === exp.department;
+            out.department === exp.department &&
+            out.severity === exp.severity &&
+            out.human_review_required === exp.human_review_required;
         console.log(c.id, ok ? "PASS" : "FAIL");
         if (!ok) console.log("  got:", JSON.stringify(out));
     }

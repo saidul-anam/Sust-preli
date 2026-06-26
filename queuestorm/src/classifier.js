@@ -27,21 +27,23 @@ export function getDepartment(caseType, userType) {
 
 export function getSeverity(caseType, evidenceVerdict, amount) {
     if (caseType === "phishing_or_social_engineering") return "critical";
-    if (evidenceVerdict === "insufficient_data") return "medium"; // ambiguous is still risky
+    if (caseType === "other" && evidenceVerdict === "insufficient_data") return "low";
+    if (evidenceVerdict === "insufficient_data") return "medium";
     if (["wrong_transfer", "duplicate_payment", "payment_failed", "agent_cash_in_issue"].includes(caseType)) {
         if (amount && amount >= 10000) return "critical";
         return evidenceVerdict === "inconsistent" ? "medium" : "high";
     }
     if (caseType === "merchant_settlement_delay") return "medium";
-    return "low"; // refund_request, other
+    return "low";
 }
 
 export function needsHumanReview(caseType, evidenceVerdict, severity) {
-    if (evidenceVerdict === "insufficient_data") return true; // can't automate without evidence
+    if (evidenceVerdict === "insufficient_data" && caseType !== "other" && caseType !== "wrong_transfer") return true;
     if (caseType === "phishing_or_social_engineering") return true;
-    if (caseType === "payment_failed" && evidenceVerdict === "consistent") return false; // automated flow exists
-    if (caseType === "merchant_settlement_delay") return false; // informational, ops handles without escalation
+    if (caseType === "payment_failed" && evidenceVerdict === "consistent") return false;
+    if (caseType === "merchant_settlement_delay") return false; 
     if (severity === "critical" || severity === "high") return true;
     if (evidenceVerdict === "inconsistent") return true;
+    
     return false;
 }
